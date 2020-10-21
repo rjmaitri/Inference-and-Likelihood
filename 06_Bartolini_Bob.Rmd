@@ -1,0 +1,87 @@
+---
+output: 
+  html_document: 
+    df_print: kable
+    theme: cerulean
+---
+  
+<div align="center">
+ <marquee behavior="alternate" bgcolor="#bb3434" direction="left" height:="" 
+ loop="7" scrollamount="1" scrolldelay="2" width="100%">
+ <span style="font-size: 20px;color:#FFFFFF">
+ Inference and Likelihood!</span></marquee>
+</div>
+
+---
+title: "Homework 6"
+author: "Bob Bartolini"
+date: "9/18/2020"
+output: html_document
+  
+
+---
+
+https://github.com/rjmaitri/Inference-and-Likelihood.git
+
+```{r setup, include=FALSE}
+#scrolling code output
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+options(width = 60)
+local({
+  hook_output <- knitr::knit_hooks$get('output')
+  knitr::knit_hooks$set(output = function(x, options) {
+    if (!is.null(options$max.height)) options$attr.output <- c(
+      options$attr.output,
+      sprintf('style="max-height: %s;"', options$max.height)
+    )
+    hook_output(x, options)
+  })
+})
+```
+
+### Go through the faded examples in the lab. You don’t need to put the output here - just, do them! And let us know if you have any remaining questions, or you feel comfortable. Full credit!
+
+
+
+### Would you say you naturally gravitate towards deductive or inductive inference? Why? 
+
+<span style="color: green;"> *"There are known knowns. There are things we know we know. We also know there are known unknowns. That is to say, we know there are some things we do not know. But there are also unknown unknowns, the ones we don't know we don't know."* - Donald Rumsfeld </span>
+
+<span style="color: green;">I was naturally inclined towards deductive reasoning, however, as I progress through a Bachelors of Science in Biology, I have gained an exposure to inductive inference. This is a result of traveling a competency curve, as I initially had an unfamiliarity with research, let alone specific fields of research. As I have began to focus on specialized fields such as molecular biology, I am  starting to see avenues for inductive reasoning.</span>
+
+### We talked about strictly interpreted Popperian Flasification versus Lakatos’s view of a research program this week.
+
+##    2a. Do you more strongly identify with one of these paradigms? Why? +1 EC for direct quotes (if you want to do some additional reading)
+
+Popper 
+<span style="color: green;"> In terms of refuting pseudo-science, I completely agree with Karl  Popper assertion that a theory can never be proven to be true, since the next test can falsify it. This rugged skepticism is useful in a world that is rife with superstitous beliefs. However, the approach seems overly pragmatic for many fields that are beyond the realm of empirical testing. For example, Popper said Neils Bohr was “a marvelous physicist, one of the greatest of all time, but he was a miserable philosopher". This quote emphasizes that Popper held no respect for inductive reasoning that fell beyong his epistemological boundaries. I find this approach to be overtly cautious and may limit scientific minds that dare to explore the edges of unknown fields. Einsteins theories on gravity lacked empirical evidence during his time, however, they have since gained empirical evidence nearly a century after they were published.  *Currently, my academic experience puts me in position to identify with Popperian Falsification, as most undergraduate lab reports require a probability value, and often experimenting with foundational theories of science.* </span> 
+
+Lakatos 
+<span style="color: green;"> Imre Lakatos has a more sound approach to deductive inference. The aforementioned gravitational theories by Einstein are a great example of this. As Einstein began with a core theory of Newtonian gravity, he began to develop auxilliary hypothesis in the form of thought experiments, which ultimately placed him in a position to develop theories involving the effects of black holes. Modern telescopes are just able to confirm these theories. This is an example of Lakato's view of a research program building outwards from a core theory that is not falsifiable. Had modern telescopy falsified Einstein's claims n the effects of blackholes, it would be an example of a degenerating theory. </span>
+
+##    2b. How does your own research program fit into one of these paradigms?
+
+<span style="color: green;">I currently research how to identify differentially expressed genes within diseased tissue samples. This is a preliminary to Lakatos approach to a research program, as a newly identified DEG is the basis of an auxilliary hypothesis. </span>
+
+##    EC x4 2c. This has been a shallow dive into Lakatos and Popper. Look them or other philosophers of science and inference up - Kuhn, Feyerabend, Musgrave, Deb Mayo, Sabra, Fillies, and others. What’s their core idea, and why do you agree or disagree?
+
+###Puffers!
+## Let’s look at the pufferfish data with likelihood!
+
+3. Grid Sampling! Based on Friday’s lab, load up the pufferfish data and use grid sampling to find the MLE of the slope, intercept and residual SD of this model. Feel free to eyeball results from an lm() fit to get reasonable values. Try not to do this for a grid of more than ~100K points (more if you want!). It’s ok to be coarse. Compare to lm.
+
+2. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
+
+4. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
+
+EC 5. Get Outside of GLM! So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is bbmle by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He’s fantastic!)
+
+Load up 'bbmle and try out mle2. It’s a bit different, in that the first argument is a function that minimizes the log likelihood (not maximizes). The second argument is a list of start values - e.g. list(slope = 2, intercept = 5, resid_sd = 2). Try and fit your model with mle2 using start values close to the actual estimates. Look at the summary and plot the profile. Note, you might get a lot of errors because it will try impossible values of your residual SD. Also, note thatyou’ll have to rewrite your likelihood function to return the negative log likelihood (or write a wrapper that does so). A small thing
+
+EC 5a. Start values! What happens if you start with start values very far away from the initial values. Failing here is fine. But what do you think is happening, and what does this say about the value of start values?
+
+EC 5b Algorithms! By default, mle2 uses the Nelder-Mead algorithm via the optim function. What happens if you add an method argument to “SANN” or “L-BFGS-B” (and for the later, which is bounded sampling, give it a lower argument for your residual value, so it’s always positive). See ?optim for some more guidance. Do these both converge to the same value? Based on their profiles, do you trust them? (Note, Simulated annealing takes a looooong time. Go have a cuppa while the profile for that one runs).
