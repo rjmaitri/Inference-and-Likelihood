@@ -43,15 +43,21 @@ local({
 })
 ```
 
+```{r}
+library(dplyr)
+library(tidyverse)
+
+
+```
+
 ### Go through the faded examples in the lab. You don’t need to put the output here - just, do them! And let us know if you have any remaining questions, or you feel comfortable. Full credit!
 
 
 
 ### Would you say you naturally gravitate towards deductive or inductive inference? Why? 
 
-<span style="color: green;"> *"There are known knowns. There are things we know we know. We also know there are known unknowns. That is to say, we know there are some things we do not know. But there are also unknown unknowns, the ones we don't know we don't know."* - Donald Rumsfeld </span>
 
-<span style="color: green;">I was naturally inclined towards deductive reasoning, however, as I progress through a Bachelors of Science in Biology, I have gained an exposure to inductive inference. This is a result of traveling a competency curve, as I initially had an unfamiliarity with research, let alone specific fields of research. As I have began to focus on specialized fields such as molecular biology, I am  starting to see avenues for inductive reasoning.</span>
+<span style="color: green;">I find obtaining degrees of belief from patterns in observation to create theories to be more natural thought process than falsifying/proving the correlations of theories and observations. Further, falsification and p-values seem appropriate for deterministic relationships, however, determining an alpha for complex statistical relationships seems like a slippery slope.  </span>
 
 ### We talked about strictly interpreted Popperian Flasification versus Lakatos’s view of a research program this week.
 
@@ -74,7 +80,126 @@ Lakatos
 
 3. Grid Sampling! Based on Friday’s lab, load up the pufferfish data and use grid sampling to find the MLE of the slope, intercept and residual SD of this model. Feel free to eyeball results from an lm() fit to get reasonable values. Try not to do this for a grid of more than ~100K points (more if you want!). It’s ok to be coarse. Compare to lm.
 
+```{r}
+#Load the data
+puff_fish <- read.csv("data/16q11PufferfishMimicry Caley & Schluter 2003.csv")
+
+#Peek into the file
+str(puff_fish)
+
+```
+
+```{r}
+
+hist(puff_fish$resemblance)
+
+```
+
+<span style="color: green;">The mean of our resemblance is `r mean(puff_fish$resemblance)` and the sd is `r sd(puff_fish$resemblance)`. These will be used for ranges on the grid.</span>
+
+
+
+
+```{r}
+
+###Find the Maximum Likelihood Estimate (max(p(D|theta)) of the slope, intercept and residual SD of this model####
+
+#Fit a model 
+puffer_LM <- lm(predators ~ resemblance, data = puff_fish)
+
+
+```
+
+```{r}
+res_sd <- res(puffer_LM)
+
+puffer_LM
+
+```
+
+# a likelihood function ############
+
+norm_likelihood <- function(obs){
+  
+  #data generating process
+  est <- lm(predators ~ resemblance, data = puff_fish)
+  
+  
+                        
+  #log likelihood
+  
+
+
+#  sum(dnorm(obs, mean_est = est, b = b_est, sd = sd_est, log = TRUE))
+  
+}
+
+
+puff_dist <- crossing(m = seq(2.1, 2.6, by = 0.1), 
+                      s=seq(.95, 1.4, by = 0.1)) %>%
+  rowwise() %>%
+  mutate(log_lik = norm_likelihood(obs = puff_fish, slope = beta1, Intercept = beta0)) %>% 
+  ungroup()
+
+puff_dist
+```
+
+```{r}
+#Output our MLE for the mean and sd
+puff_dist %>%
+  filter(log_lik == max(log_lik))
+
+
+```
+
+
+
+```{r}
+
+ggplot(puff_dist, aes(x=m, y=s, z=log_lik)) +
+  geom_contour(aes(color = ..level..))
+
+```
+
+
+
+```{r}
+LL <- function(beta0, beta1, mu, sigma) {
+    # Find residuals
+    #
+    R = puff_fish$predators - puff_fish$resemblance * beta1 - beta0
+    #
+    # Calculate the likelihood for the residuals (with mu and sigma as parameters)
+    #
+    R = suppressWarnings(dnorm(R, mu, sigma, log = TRUE))
+    #
+    # Sum the log likelihoods for all of the data points
+    #
+    -sum(R)
+}
+
+fit <- mle(LL, start = list(beta0 = 1.0, beta1 = 2, mu = 7, sigma=1))
+fit
+
+
+```
+
+
+
+
+<span style="color: green;">The contour plot shows a mean likelihood peak between 2.3-2.5 and sd peak between 1.15 and 1.25.</span>
+
 2. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
+
+```{r}
+puff_m_profile <- puff_dist %>%
+  group_by(m) %>%
+  filter(log_lik == max(log_lik)) %>%
+  ungroup()
+
+qplot(m, log_lik, data=puff_m_profile, geom = "line")
+
+```
 
 4. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
 
