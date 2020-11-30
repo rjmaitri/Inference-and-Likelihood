@@ -87,109 +87,103 @@ puff_fish <- read.csv("data/16q11PufferfishMimicry Caley & Schluter 2003.csv")
 #Peek into the file
 str(puff_fish)
 
+summary(puff_fish)
 ```
 
 ```{r}
-
-hist(puff_fish$resemblance)
-
-```
-
-<span style="color: green;">The mean of our resemblance is `r mean(puff_fish$resemblance)` and the sd is `r sd(puff_fish$resemblance)`. These will be used for ranges on the grid.</span>
-
-
-
-
-```{r}
-
-###Find the Maximum Likelihood Estimate (max(p(D|theta)) of the slope, intercept and residual SD of this model####
 
 #Fit a model 
 puffer_LM <- lm(predators ~ resemblance, data = puff_fish)
 
+```
+
+```{r}
+sd(puffer_LM[["residuals"]])
 
 ```
 
 ```{r}
-res_sd <- res(puffer_LM)
-
-puffer_LM
-
-```
-
-# a likelihood function ############
-
-norm_likelihood <- function(obs){
+############i fucking did it #################################
+norm_likelihood <- function(obs, B0, B1, sd){
   
-  #data generating process
-  est <- lm(predators ~ resemblance, data = puff_fish)
+  #data generating process (simulate LM) ~~~ y_hat = puffer_LM[["fitted.values"]]
+  est <- puff_fish$resemblance  * B1 + B0
   
-  
-                        
   #log likelihood
+  sum(dnorm(obs, mean = est, sd = sd, log = TRUE))
   
-
-
-#  sum(dnorm(obs, mean_est = est, b = b_est, sd = sd_est, log = TRUE))
+#  likelihoods <- dnorm(puff_fish$predators, mean = puff_fish$resemblance  * B1 + B0, sd = err.sigma)
   
 }
 
 
-puff_dist <- crossing(m = seq(2.1, 2.6, by = 0.1), 
-                      s=seq(.95, 1.4, by = 0.1)) %>%
+
+puff_dist <- crossing(Slope = seq(1, 3, by = 0.1), 
+                      Int =seq(1.5, 2.5, by = 0.1),
+                      res_sd = seq(2.5,3.5, by = 0.1)) %>%
   rowwise() %>%
-  mutate(log_lik = norm_likelihood(obs = puff_fish, slope = beta1, Intercept = beta0)) %>% 
+  mutate(log_lik = norm_likelihood(obs = puff_fish$predators, B0 = Int, B1 = Slope, sd = res_sd)) %>% 
   ungroup()
 
-puff_dist
 ```
 
 ```{r}
-#Output our MLE for the mean and sd
 puff_dist %>%
   filter(log_lik == max(log_lik))
 
-
 ```
 
 
 
 ```{r}
+#simulate LM 
+#lm(random sample from puff_fish) and res_sd
+#look at map_df
 
-ggplot(puff_dist, aes(x=m, y=s, z=log_lik)) +
-  geom_contour(aes(color = ..level..))
+#look at map_df, does crossing iterate over this to create the likelihood with defined paramters?
+
+####where does the df of b0,b1 and sd come from? randome samples? how do i generate random samples?
+
+#when we do likelihood of mean, rnorm()
+
+
+
+#likelihood function for lm_sims
+# dnorm(lm_se_df, b0 = int, b1 = slope, res_se)
+#crossing
+#max ll function
+
+#compare to lm
 
 ```
 
-
-
 ```{r}
-LL <- function(beta0, beta1, mu, sigma) {
-    # Find residuals
-    #
-    R = puff_fish$predators - puff_fish$resemblance * beta1 - beta0
-    #
-    # Calculate the likelihood for the residuals (with mu and sigma as parameters)
-    #
-    R = suppressWarnings(dnorm(R, mu, sigma, log = TRUE))
-    #
-    # Sum the log likelihoods for all of the data points
-    #
-    -sum(R)
+#######SUNDAY 11/29
+norm_likelihood <- function(LMobj , slope_est, int_est){
+  
+  #data generating process
+  slope <- slope_est
+  int <- int_est
+  res_sd <- res_sd_est
+  
+  #log likelihood
+  sum(dnorm(puff_fish, B1 = slope, B0 = int_est, log = TRUE))
+  
 }
 
-fit <- mle(LL, start = list(beta0 = 1.0, beta1 = 2, mu = 7, sigma=1))
-fit
+puff_dist <- crossing(m = seq(3720, 3740, by = 0.1), 
+                      s=seq(1280, 1310, by = 0.1)) %>%
+  rowwise() %>%
+  mutate(log_lik = norm_likelihood(obs = seals$age.days, mean_est = m, sd_est = s)) %>% 
+  ungroup()
 
 
 ```
-
-
 
 
 <span style="color: green;">The contour plot shows a mean likelihood peak between 2.3-2.5 and sd peak between 1.15 and 1.25.</span>
 
-2. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
+4. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
 
 ```{r}
 puff_m_profile <- puff_dist %>%
@@ -201,12 +195,12 @@ qplot(m, log_lik, data=puff_m_profile, geom = "line")
 
 ```
 
-4. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
+5. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
 
-EC 5. Get Outside of GLM! So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is bbmle by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He’s fantastic!)
+EC 6. Get Outside of GLM! So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is bbmle by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He’s fantastic!)
 
 Load up 'bbmle and try out mle2. It’s a bit different, in that the first argument is a function that minimizes the log likelihood (not maximizes). The second argument is a list of start values - e.g. list(slope = 2, intercept = 5, resid_sd = 2). Try and fit your model with mle2 using start values close to the actual estimates. Look at the summary and plot the profile. Note, you might get a lot of errors because it will try impossible values of your residual SD. Also, note thatyou’ll have to rewrite your likelihood function to return the negative log likelihood (or write a wrapper that does so). A small thing
 
-EC 5a. Start values! What happens if you start with start values very far away from the initial values. Failing here is fine. But what do you think is happening, and what does this say about the value of start values?
+EC 6a. Start values! What happens if you start with start values very far away from the initial values. Failing here is fine. But what do you think is happening, and what does this say about the value of start values?
 
-EC 5b Algorithms! By default, mle2 uses the Nelder-Mead algorithm via the optim function. What happens if you add an method argument to “SANN” or “L-BFGS-B” (and for the later, which is bounded sampling, give it a lower argument for your residual value, so it’s always positive). See ?optim for some more guidance. Do these both converge to the same value? Based on their profiles, do you trust them? (Note, Simulated annealing takes a looooong time. Go have a cuppa while the profile for that one runs).
+EC 6b Algorithms! By default, mle2 uses the Nelder-Mead algorithm via the optim function. What happens if you add an method argument to “SANN” or “L-BFGS-B” (and for the later, which is bounded sampling, give it a lower argument for your residual value, so it’s always positive). See ?optim for some more guidance. Do these both converge to the same value? Based on their profiles, do you trust them? (Note, Simulated annealing takes a looooong time. Go have a cuppa while the profile for that one runs).
