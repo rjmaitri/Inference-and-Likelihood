@@ -134,55 +134,6 @@ puff_dist %>%
 ```
 
 
-
-```{r}
-#simulate LM 
-#lm(random sample from puff_fish) and res_sd
-#look at map_df
-
-#look at map_df, does crossing iterate over this to create the likelihood with defined paramters?
-
-####where does the df of b0,b1 and sd come from? randome samples? how do i generate random samples?
-
-#when we do likelihood of mean, rnorm()
-
-
-
-#likelihood function for lm_sims
-# dnorm(lm_se_df, b0 = int, b1 = slope, res_se)
-#crossing
-#max ll function
-
-#compare to lm
-
-```
-
-```{r}
-#######SUNDAY 11/29
-norm_likelihood <- function(LMobj , slope_est, int_est){
-  
-  #data generating process
-  slope <- slope_est
-  int <- int_est
-  res_sd <- res_sd_est
-  
-  #log likelihood
-  sum(dnorm(puff_fish, B1 = slope, B0 = int_est, log = TRUE))
-  
-}
-
-puff_dist <- crossing(m = seq(3720, 3740, by = 0.1), 
-                      s=seq(1280, 1310, by = 0.1)) %>%
-  rowwise() %>%
-  mutate(log_lik = norm_likelihood(obs = seals$age.days, mean_est = m, sd_est = s)) %>% 
-  ungroup()
-
-
-```
-
-
-<span style="color: green;">The contour plot shows a mean likelihood peak between 2.3-2.5 and sd peak between 1.15 and 1.25.</span>
-
 4. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
 
 ```{r}
