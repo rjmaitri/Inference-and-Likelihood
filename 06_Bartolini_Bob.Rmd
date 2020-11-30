@@ -46,7 +46,7 @@ local({
 ```{r}
 library(dplyr)
 library(tidyverse)
-
+library(profileModel)
 
 ```
 
@@ -118,9 +118,9 @@ norm_likelihood <- function(obs, B0, B1, sd){
 
 
 
-puff_dist <- crossing(Slope = seq(1, 3, by = 0.1), 
-                      Int =seq(1.5, 2.5, by = 0.1),
-                      res_sd = seq(2.5,3.5, by = 0.1)) %>%
+puff_dist <- crossing(Slope = seq(2.75, 3.25, by = 0.01), 
+                      Int =seq(1.75, 2.15, by = 0.01),
+                      res_sd = seq(2.5,3.5, by = 0.01)) %>%
   rowwise() %>%
   mutate(log_lik = norm_likelihood(obs = puff_fish$predators, B0 = Int, B1 = Slope, sd = res_sd)) %>% 
   ungroup()
@@ -137,16 +137,85 @@ puff_dist %>%
 4. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
 
 ```{r}
-puff_m_profile <- puff_dist %>%
-  group_by(m) %>%
-  filter(log_lik == max(log_lik)) %>%
-  ungroup()
+#let's make our likelihood surface!
+# visualize!
+#Filter to MLE of SD
+sd_MLE <-  puff_dist %>%
+  group_by(res_sd) %>%
+  filter(log_lik == max(log_lik))
 
-qplot(m, log_lik, data=puff_m_profile, geom = "line")
+#Profile for SD
+ggplot(sd_MLE, aes(x= res_sd, y= log_lik)) +
+  geom_point()
+  
+```
+
+```{r}
+#surface of slope and intercept
+
+slopIntraster <- ggplot(data = puff_dist,
+mapping = aes(x = Slope, y = Int, fill = log_lik)) +
+geom_raster() +
+scale_fill_viridis_c()
+
+rayshader::plot_gg(IntSlope)
+
+IntSlope <-  ggplot(data = puff_dist %>% filter(log_lik > max(log_lik)-5),
+mapping = aes(x = Slope, y = Int, fill = log_lik)) +
+geom_raster() +
+scale_fill_viridis_c()
+
+rayshader::plot_gg(IntSlope)
 
 ```
 
+
+
+
+
+
 5. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
+
+```{r}
+puffer_mle <- glm(predators ~ resemblance,
+                family = gaussian(link = "identity"),
+                data = puff_fish)
+
+puffer_mle
+```
+
+```{r} 
+#Test assumptions
+#No relationship between fitted and residual values
+fitted <- predict(puffer_mle)
+res <- residuals(puffer_mle)
+
+qplot(fitted, res)
+
+
+```
+
+
+```{r}
+#Residuals follow normal distribution
+
+hist(res)
+
+```
+
+```{r}
+#compare GLM to likelihood/crossing function
+prof <- profileModel(puffer_mle,
+                     objective = "ordinaryDeviance")
+
+plot(prof)
+
+```
+
+
+```{r}
+
+```
 
 EC 6. Get Outside of GLM! So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is bbmle by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He’s fantastic!)
 
