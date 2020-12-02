@@ -52,28 +52,136 @@ library(profileModel)
 
 ### Go through the faded examples in the lab. You don’t need to put the output here - just, do them! And let us know if you have any remaining questions, or you feel comfortable. Full credit!
 
+```{r}
+fat <- read.csv("../data/17q04BodyFatHeatLoss Sloan and Keatinge 1973 replica.csv")
 
+#initial visualization to determine if lm is appropriate
+fat_plot <- ggplot(data=fat, aes(x=leanness, y=lossrate)) + 
+  geom_point()
+fat_plot
+
+#fit that model
+fat_mod <- glm(lossrate ~ leanness, 
+               family = gaussian(link = "identity"), 
+               data=fat)
+  
+  
+#assumptions
+fat_fit <- predict(fat_mod)
+fat_res <- residuals(fat_mod)
+
+qplot(fat_fit, fat_res)
+
+qqnorm(fat_res)
+qqline(fat_res)
+
+plot(profile(fat_mod))
+
+#LRT test of model
+fat_mod_null <- glm(lossrate ~ 1, 
+               family = gaussian(link = "identity"), 
+               data=fat)
+  
+anova(fat_mod_null, fat_mod, test = "LRT")
+
+#t-tests of parameters
+summary(fat_mod)
+
+```
+
+```{r}
+
+deet <- read.csv("../data/17q24DEETMosquiteBites.csv")
+
+deet_plot <- ggplot(data=deet, aes(x=dose, y=bites)) + 
+  geom_point()
+
+deet_plot
+
+#fit that model
+deet_mod <-  glm(bites ~ dose, 
+                   family = gaussian(link = "identity")
+                   data=deet)
+  
+
+#assumptions
+deet_fit <- predict(deet_mod)
+deet_res <- residuals(deet_mod)
+
+qplot(deet_fit, deet_res)
+
+qqnorm(deet_res)
+qqline(deet_res)
+
+plot(profile(deet_mod))
+
+#f-tests of model
+deet_mod_null <- glm(bites ~ dose, 
+                   family = gaussian(link = "identity")
+                   data=deet)
+
+anova(deet_mod_null, deet_mod, test = "LRT")
+
+#t-tests of parameters
+summary(deet_mod)
+
+
+```
+
+```{r}
+
+zoo <- read.csv("../data/17q02ZooMortality Clubb and Mason 2003 replica.csv")
+
+zoo_plot <- ggplot(data=zoo, aes(x=mortality, y=homerange)) + 
+  geom_point()
+
+#fit that model
+zoo_mod <- glm(homerange~mortality,
+              family = gaussian(link = "identity"),
+                data = zoo)
+
+#assumptions
+zoo_fit <- predict(zoo_mod)
+zoo_res <- residuals(zoo_mod)
+
+qplot(zoo_fit, zoo_res)
+
+qqnorm(zoo_res)
+qqline(zoo_res)
+
+plot(profile(zoo_mod))
+
+#LRT-tests of model
+zoo_mod_null <- <- glm(homerange~ 1,
+              family = gaussian(link = "identity"),
+                data = zoo)
+
+anova(zoo_mod_null, zoo_mod, test = "LRT")
+
+#z-tests of parameters
+summary(zoo_mod)
+
+
+```
 
 ### Would you say you naturally gravitate towards deductive or inductive inference? Why? 
 
 
-<span style="color: green;">I find obtaining degrees of belief from patterns in observation to create theories to be more natural thought process than falsifying/proving the correlations of theories and observations. Further, falsification and p-values seem appropriate for deterministic relationships, however, determining an alpha for complex statistical relationships seems like a slippery slope.  </span>
+<span style="color: green;">The context of the problem decides if I will use a deductive or inductive approach. For example, when my car breaks down, I have a deductive approach, starting with the general systems and narrowing down to the specific malfunctioning part. However, I tend to make inductive inferences when I analyze basic research datasets. A heatmap I generated using iPOND (isolated protein on nascent DNA) data showed upregulation within a set of genes specific to a certain DNA repair pathway. Deriving inference on the repair pathway from protein abundance data is an example of inductive inference, as a specific detail led me to a more general observation.</span>
 
 ### We talked about strictly interpreted Popperian Flasification versus Lakatos’s view of a research program this week.
 
 ##    2a. Do you more strongly identify with one of these paradigms? Why? +1 EC for direct quotes (if you want to do some additional reading)
 
 Popper 
-<span style="color: green;"> In terms of refuting pseudo-science, I completely agree with Karl  Popper assertion that a theory can never be proven to be true, since the next test can falsify it. This rugged skepticism is useful in a world that is rife with superstitous beliefs. However, the approach seems overly pragmatic for many fields that are beyond the realm of empirical testing. For example, Popper said Neils Bohr was “a marvelous physicist, one of the greatest of all time, but he was a miserable philosopher". This quote emphasizes that Popper held no respect for inductive reasoning that fell beyong his epistemological boundaries. I find this approach to be overtly cautious and may limit scientific minds that dare to explore the edges of unknown fields. Einsteins theories on gravity lacked empirical evidence during his time, however, they have since gained empirical evidence nearly a century after they were published.  *Currently, my academic experience puts me in position to identify with Popperian Falsification, as most undergraduate lab reports require a probability value, and often experimenting with foundational theories of science.* </span> 
+<span style="color: green;">Debunking pseudo-science and supporting deterministic relationships are the only areas where I'd chose Poppers over Lakatos. Poppers rugged skepticism is useful in a world that is rife with superstitous beliefs. Popper's philosophical assertion that a theory can never be proven to be true, since the next test can falsify it is a powerful approach to debunking errorneous claims.  However, the approach seems overly pragmatic for fields that are beyond the realm of empirical testing, such as astrophysics. For example, Popper said Neils Bohr was “a marvelous physicist, one of the greatest of all time, but he was a miserable philosopher". This quote emphasizes that Popper held no respect for inductive reasoning that fell beyong his epistemological boundaries. I find this approach to be overtly cautious and may limit scientific minds that dare to explore the edges of unknown fields. Einsteins Theory of General Relativity lacked empirical evidence during his time, however, they have been supported by rare astronomical events, such as observing a star orbiting a supermassive blackhole, that occured long after Einsteins death. </span> 
 
 Lakatos 
-<span style="color: green;"> Imre Lakatos has a more sound approach to deductive inference. The aforementioned gravitational theories by Einstein are a great example of this. As Einstein began with a core theory of Newtonian gravity, he began to develop auxilliary hypothesis in the form of thought experiments, which ultimately placed him in a position to develop theories involving the effects of black holes. Modern telescopes are just able to confirm these theories. This is an example of Lakato's view of a research program building outwards from a core theory that is not falsifiable. Had modern telescopy falsified Einstein's claims n the effects of blackholes, it would be an example of a degenerating theory. </span>
+<span style="color: green;"> Imre Lakatos  approach to deductive inference. The gravitational theories by Einstein are a great example of this. As Einstein began with a core theory of Newtonian gravity, he began to develop auxilliary hypothesis in the form of thought experiments, which ultimately placed him in a position to develop theories involving the effects of black holes. Modern telescopes are just able to confirm these theories. This is an example of Lakato's view of a research program building outwards from a core theory that is not falsifiable. Had modern telescopy falsified Einstein's claims n the effects of blackholes, it would be an example of a degenerating theory. </span>
 
 ##    2b. How does your own research program fit into one of these paradigms?
 
-<span style="color: green;">I currently research how to identify differentially expressed genes within diseased tissue samples. This is a preliminary to Lakatos approach to a research program, as a newly identified DEG is the basis of an auxilliary hypothesis. </span>
-
-##    EC x4 2c. This has been a shallow dive into Lakatos and Popper. Look them or other philosophers of science and inference up - Kuhn, Feyerabend, Musgrave, Deb Mayo, Sabra, Fillies, and others. What’s their core idea, and why do you agree or disagree?
+<span style="color: green;">I currently research how to identify differentially expressed genes between diseased and healthy tissue samples. Preparing samples, quantifying transcript abundance and statisical analysis gives insight into a diseased cells expression profile. This is basic research that spurs auxiliary hypotheses, therefore this work echos Imre Lakatos research program. </span>
 
 ###Puffers!
 ## Let’s look at the pufferfish data with likelihood!
@@ -95,28 +203,32 @@ summary(puff_fish)
 #Fit a model 
 puffer_LM <- lm(predators ~ resemblance, data = puff_fish)
 
+puffer_LM
 ```
 
+<span style="color: green;">I will refer to these coefficients for the grid sampling</span>
+
 ```{r}
+#look into the residual sd
 sd(puffer_LM[["residuals"]])
 
 ```
 
+<span style="color: green;">This will be used for the grid sampling.</span>
+
 ```{r}
-############i fucking did it #################################
+############likelihood with grid sampling #################################
 norm_likelihood <- function(obs, B0, B1, sd){
   
-  #data generating process (simulate LM) ~~~ y_hat = puffer_LM[["fitted.values"]]
+  #data generating process (uses crossing variable names in y-hat equation)
   est <- puff_fish$resemblance  * B1 + B0
   
-  #log likelihood
+  #log likelihood fnction
   sum(dnorm(obs, mean = est, sd = sd, log = TRUE))
   
 #  likelihoods <- dnorm(puff_fish$predators, mean = puff_fish$resemblance  * B1 + B0, sd = err.sigma)
   
 }
-
-
 
 puff_dist <- crossing(Slope = seq(2.75, 3.25, by = 0.01), 
                       Int =seq(1.75, 2.15, by = 0.01),
@@ -133,22 +245,38 @@ puff_dist %>%
 
 ```
 
+<span style="color: green;">The function and grid sampling give us a MLE for the slope, int and res_sd, this is virtually the same as the LM output.</span>
 
 4. Surfaces! Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
 
 ```{r}
-#let's make our likelihood surface!
-# visualize!
+#Likelihood surface!
+#'
 #Filter to MLE of SD
 sd_MLE <-  puff_dist %>%
   group_by(res_sd) %>%
-  filter(log_lik == max(log_lik))
+  filter(log_lik == max(log_lik)) %>%
+  ungroup()
 
 #Profile for SD
 ggplot(sd_MLE, aes(x= res_sd, y= log_lik)) +
-  geom_point()
+  geom_point()+
+  theme_classic()
   
 ```
+
+<span style="color: green;">Filtering to the MLE of residual SD gives us the profile for Slope and Int. This profile is well behaved.</span>
+
+```{r}
+###lets look at the CI
+sd_MLE %>%
+  filter(log_lik > max(log_lik) - 1.92) %>%
+    filter(row_number()==1 | row_number()==n())
+
+
+```
+
+<span style="color: green;">The CI of res SD in this grid is 2.5-3.5</span>
 
 ```{r}
 #surface of slope and intercept
@@ -158,7 +286,7 @@ mapping = aes(x = Slope, y = Int, fill = log_lik)) +
 geom_raster() +
 scale_fill_viridis_c()
 
-rayshader::plot_gg(IntSlope)
+
 
 IntSlope <-  ggplot(data = puff_dist %>% filter(log_lik > max(log_lik)-5),
 mapping = aes(x = Slope, y = Int, fill = log_lik)) +
@@ -177,6 +305,7 @@ rayshader::plot_gg(IntSlope)
 5. GLM! Now, compare those results to results from glm. Show the profiles and confidence intervals from glm() for the slope and intercept. Also show how you validate assumptions.
 
 ```{r}
+#fit the generalized lin
 puffer_mle <- glm(predators ~ resemblance,
                 family = gaussian(link = "identity"),
                 data = puff_fish)
@@ -195,6 +324,7 @@ qplot(fitted, res)
 
 ```
 
+<span style="color: green;">Residuals vs. fitted upholds the assumption of no relationship, shown by the scattered data. </span>
 
 ```{r}
 #Residuals follow normal distribution
@@ -203,24 +333,16 @@ hist(res)
 
 ```
 
+<span style="color: green;">The residuals uphold the assumption of normality.</span>
+
 ```{r}
-#compare GLM to likelihood/crossing function
+#compare CI of GLM to CI likelihood/crossing function
 prof <- profileModel(puffer_mle,
-                     objective = "ordinaryDeviance")
+                     objective = "ordinaryDeviance",
+                     quantile = qchisq(0.95,1))
 
 plot(prof)
 
 ```
 
-
-```{r}
-
-```
-
-EC 6. Get Outside of GLM! So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is bbmle by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He’s fantastic!)
-
-Load up 'bbmle and try out mle2. It’s a bit different, in that the first argument is a function that minimizes the log likelihood (not maximizes). The second argument is a list of start values - e.g. list(slope = 2, intercept = 5, resid_sd = 2). Try and fit your model with mle2 using start values close to the actual estimates. Look at the summary and plot the profile. Note, you might get a lot of errors because it will try impossible values of your residual SD. Also, note thatyou’ll have to rewrite your likelihood function to return the negative log likelihood (or write a wrapper that does so). A small thing
-
-EC 6a. Start values! What happens if you start with start values very far away from the initial values. Failing here is fine. But what do you think is happening, and what does this say about the value of start values?
-
-EC 6b Algorithms! By default, mle2 uses the Nelder-Mead algorithm via the optim function. What happens if you add an method argument to “SANN” or “L-BFGS-B” (and for the later, which is bounded sampling, give it a lower argument for your residual value, so it’s always positive). See ?optim for some more guidance. Do these both converge to the same value? Based on their profiles, do you trust them? (Note, Simulated annealing takes a looooong time. Go have a cuppa while the profile for that one runs).
+<span style="color: green;">The CI from profile model supports the grid sample CI of 2.5-3.5.</span>
