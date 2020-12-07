@@ -47,15 +47,16 @@ local({
 library(dplyr)
 library(tidyverse)
 library(profileModel)
+library(ggplot2)
 
 ```
 
 ### Go through the faded examples in the lab. You don’t need to put the output here - just, do them! And let us know if you have any remaining questions, or you feel comfortable. Full credit!
 
-```{r}
+
 fat <- read.csv("../data/17q04BodyFatHeatLoss Sloan and Keatinge 1973 replica.csv")
 
-#initial visualization to determine if lm is appropriate
+initial visualization to determine if lm is appropriate
 fat_plot <- ggplot(data=fat, aes(x=leanness, y=lossrate)) + 
   geom_point()
 fat_plot
@@ -87,9 +88,9 @@ anova(fat_mod_null, fat_mod, test = "LRT")
 #t-tests of parameters
 summary(fat_mod)
 
-```
 
-```{r}
+
+
 
 deet <- read.csv("../data/17q24DEETMosquiteBites.csv")
 
@@ -126,9 +127,7 @@ anova(deet_mod_null, deet_mod, test = "LRT")
 summary(deet_mod)
 
 
-```
 
-```{r}
 
 zoo <- read.csv("../data/17q02ZooMortality Clubb and Mason 2003 replica.csv")
 
@@ -162,7 +161,6 @@ anova(zoo_mod_null, zoo_mod, test = "LRT")
 summary(zoo_mod)
 
 
-```
 
 ### Would you say you naturally gravitate towards deductive or inductive inference? Why? 
 
@@ -297,7 +295,7 @@ rayshader::plot_gg(IntSlope)
 
 ```
 
-
+<span style="color: green;">Note: The surface ouputs in rstudiob but not in the rmd html file.</span>
 
 
 
